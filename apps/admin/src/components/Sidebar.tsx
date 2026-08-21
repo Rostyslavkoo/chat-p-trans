@@ -2,23 +2,24 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Globe, MessageSquare, Star, Users, type LucideIcon } from "lucide-react";
 import type { UserRole } from "@chat-p-trans/shared";
 
 interface NavItem {
   href: string;
   label: string;
-  icon: string;
+  Icon: LucideIcon;
 }
 
 const NAV_ITEMS: Record<UserRole, NavItem[]> = {
   admin: [
-    { href: "/admin/sites", label: "Сайти", icon: "🌐" },
-    { href: "/admin/managers", label: "Менеджери", icon: "👥" },
+    { href: "/admin/sites", label: "Сайти", Icon: Globe },
+    { href: "/admin/managers", label: "Менеджери", Icon: Users },
   ],
   manager: [
-    { href: "/chats", label: "Чати", icon: "💬" },
-    { href: "/ratings", label: "Оцінки", icon: "⭐" },
-    { href: "/managers", label: "Менеджери", icon: "👥" },
+    { href: "/chats", label: "Чати", Icon: MessageSquare },
+    { href: "/ratings", label: "Оцінки", Icon: Star },
+    { href: "/managers", label: "Менеджери", Icon: Users },
   ],
 };
 
@@ -41,7 +42,7 @@ export function Sidebar({ role }: SidebarProps) {
               isActive ? "bg-brand-navy text-white" : "text-slate-600 hover:bg-slate-100"
             }`}
           >
-            <span aria-hidden>{item.icon}</span>
+            <item.Icon size={18} strokeWidth={2} />
             {item.label}
           </Link>
         );

@@ -9,6 +9,7 @@ interface AppProps {
 
 export function App({ siteId }: AppProps) {
   const isOpen = useWidgetUiStore((state) => state.isOpen);
+  const isLauncherVisible = useWidgetUiStore((state) => state.isLauncherVisible);
   const { config, pending, error } = useWidgetConfig(siteId);
 
   // Nothing to show yet, and nothing sensible to show for a misconfigured
@@ -27,7 +28,8 @@ export function App({ siteId }: AppProps) {
         "--widget-color-accent": config.colors.accent,
       }}
     >
-      {isOpen ? <ChatPanel config={config} /> : <ChatBubble config={config} />}
+      {isOpen && <ChatPanel config={config} />}
+      {!isOpen && isLauncherVisible && <ChatBubble config={config} />}
     </div>
   );
 }

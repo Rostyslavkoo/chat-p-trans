@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "~/App";
 import { getSiteId } from "~/lib/get-site-id";
+import { exposePublicApi } from "~/lib/public-api";
 import widgetStyles from "~/styles/widget.css?inline";
 
 const HOST_ELEMENT_ID = "chat-p-trans-widget-root";
@@ -32,6 +33,8 @@ function mount() {
       <App siteId={siteId} />
     </StrictMode>,
   );
+
+  exposePublicApi();
 }
 
 if (document.readyState === "loading") {

@@ -12,7 +12,7 @@ type TabKey = "new" | "mine" | "active" | "closed";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "new", label: "Нові" },
-  { key: "mine", label: "Моі" },
+  { key: "mine", label: "Мої" },
   { key: "active", label: "Активні" },
   { key: "closed", label: "Закриті" },
 ];

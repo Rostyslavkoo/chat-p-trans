@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronDown, Volume2 } from "lucide-react";
 import type { ManagerPresence } from "@chat-p-trans/shared";
 import { useSessionStore } from "~/stores/session.store";
 
@@ -43,7 +44,7 @@ export function TopBar({ title }: TopBarProps) {
       <div className="relative flex items-center gap-4">
         {isManager && (
           <button type="button" aria-label="Звук сповіщень" className="text-slate-500 hover:text-slate-700">
-            🔊
+            <Volume2 size={18} strokeWidth={2} />
           </button>
         )}
 

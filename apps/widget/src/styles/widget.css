@@ -1,3 +1,14 @@
+/* Shadow DOM gets no page reset — set our own so padded inputs don't
+   overflow their container. */
+.chat-widget-root,
+.chat-widget-root *,
+.chat-widget-root *::before,
+.chat-widget-root *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 .chat-widget-root {
   /* Set inline per-tenant from WidgetConfig (see App.tsx) — these are
      fallbacks only, in case a config is ever missing a color. */
@@ -5,11 +16,24 @@
   --widget-color-accent: #f6c915;
   --widget-color-primary-light: color-mix(in srgb, var(--widget-color-primary) 80%, white);
   --color-text: #1a1a1a;
+  --color-border: #e5e7eb;
+  --color-muted: #6b7280;
+  --color-surface: #f7f8fb;
+  --color-danger: #dc2626;
 
   position: fixed;
   z-index: 2147483000;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--color-text);
+  /* The root can span the viewport on mobile; only its children should be
+     clickable so the host page stays usable underneath. */
+  pointer-events: none;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.chat-widget-root > * {
+  pointer-events: auto;
 }
 
 .chat-widget-root--bottom-right {
@@ -20,7 +44,10 @@
 .chat-widget-root--bottom-left {
   bottom: 24px;
   left: 24px;
+  justify-content: flex-start;
 }
+
+/* ---------------------------------------------------------------- bubble */
 
 .chat-bubble {
   display: flex;
@@ -30,27 +57,45 @@
   border-radius: 999px;
   background: var(--widget-color-primary);
   color: white;
-  padding: 10px 20px 10px 10px;
+  padding: 10px 16px 10px 10px;
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(16, 25, 63, 0.35);
+  font-family: inherit;
 }
 
-.chat-bubble__avatar {
-  width: 40px;
-  height: 40px;
+.chat-bubble__avatar,
+.chat-panel__avatar {
+  position: relative;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--widget-color-primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  overflow: hidden;
+  color: white;
+  overflow: visible;
+  flex-shrink: 0;
 }
 
-.chat-bubble__avatar img {
+.chat-bubble__avatar img,
+.chat-panel__avatar img {
   width: 100%;
   height: 100%;
+  border-radius: 50%;
   object-fit: cover;
+}
+
+.chat-bubble__presence,
+.chat-panel__presence {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid var(--widget-color-primary);
 }
 
 .chat-bubble__text {
@@ -60,10 +105,17 @@
   text-align: left;
 }
 
+.chat-bubble__icon {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ----------------------------------------------------------------- panel */
+
 .chat-panel {
-  width: 360px;
-  height: 520px;
-  max-height: 80vh;
+  width: 370px;
+  max-height: min(600px, 80vh);
   background: white;
   border-radius: 16px;
   overflow: hidden;
@@ -72,37 +124,27 @@
   flex-direction: column;
 }
 
+/* Pre-chat sizes to its content; an open thread claims the full height so
+   messages have room to scroll. */
+.chat-panel--thread {
+  height: min(600px, 80vh);
+}
+
 .chat-panel__header {
   background: var(--widget-color-primary);
   color: white;
-  padding: 16px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
 .chat-panel__manager {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.chat-panel__avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--widget-color-primary-light);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  overflow: hidden;
-}
-
-.chat-panel__avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  min-width: 0;
 }
 
 .chat-panel__manager-name {
@@ -115,60 +157,220 @@
   opacity: 0.7;
 }
 
-.chat-panel__close {
+.chat-panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chat-panel__icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border: none;
+  border-radius: 8px;
   background: transparent;
   color: white;
-  font-size: 16px;
   cursor: pointer;
-  padding: 4px;
+  transition: background 0.15s;
 }
+
+.chat-panel__icon-button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* -------------------------------------------------------------- messages */
 
 .chat-panel__messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: #f7f8fb;
+  gap: 12px;
+  background: var(--color-surface);
 }
 
 .chat-message {
-  max-width: 80%;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 14px;
-  line-height: 1.4;
-  color: var(--color-text);
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  max-width: 85%;
 }
 
 .chat-message--manager {
   align-self: flex-start;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-bottom-left-radius: 2px;
 }
 
 .chat-message--client {
   align-self: flex-end;
-  background: var(--widget-color-accent);
-  border-bottom-right-radius: 2px;
+  flex-direction: row-reverse;
 }
+
+.chat-message__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--widget-color-primary-light);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.chat-message__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-message__bubble {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.chat-message--manager .chat-message__bubble {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-bottom-left-radius: 4px;
+}
+
+.chat-message--client .chat-message__bubble {
+  background: var(--widget-color-primary);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-message__meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+/* -------------------------------------------------------- pre-chat form */
+
+.pre-chat {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pre-chat__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pre-chat__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pre-chat__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.pre-chat__input,
+.pre-chat__textarea {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 11px 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  font-family: inherit;
+  background: white;
+  color: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.pre-chat__textarea {
+  resize: none;
+}
+
+.pre-chat__input:focus,
+.pre-chat__textarea:focus {
+  border-color: var(--widget-color-primary);
+}
+
+.pre-chat__input--invalid {
+  border-color: var(--color-danger);
+}
+
+.pre-chat__error {
+  color: var(--color-danger);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.pre-chat__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pre-chat__counter {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin-left: auto;
+}
+
+.pre-chat__submit {
+  border: none;
+  border-radius: 10px;
+  background: var(--widget-color-primary);
+  color: white;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.pre-chat__submit:hover {
+  opacity: 0.9;
+}
+
+/* ---------------------------------------------------------------- footer */
 
 .chat-panel__footer {
   display: flex;
+  align-items: center;
   gap: 8px;
   padding: 12px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--color-border);
+  background: white;
 }
 
 .chat-panel__input {
   flex: 1;
-  border: 1px solid #e5e7eb;
+  min-width: 0;
+  border: 1px solid var(--color-border);
   border-radius: 999px;
   padding: 10px 16px;
   font-size: 14px;
+  font-family: inherit;
   outline: none;
 }
 
@@ -177,12 +379,95 @@
 }
 
 .chat-panel__send {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 40px;
   height: 40px;
+  flex-shrink: 0;
   border-radius: 50%;
   border: none;
   background: var(--widget-color-primary);
   color: white;
   cursor: pointer;
-  font-size: 16px;
+  transition: opacity 0.15s;
+}
+
+.chat-panel__send:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------- mobile */
+
+/* On phones the panel spans the viewport instead of floating at a fixed
+   width, which would overflow the screen edge. The root drops its corner
+   offsets so the panel can reach both edges. */
+@media (max-width: 480px) {
+  .chat-widget-root--bottom-right,
+  .chat-widget-root--bottom-left {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+  }
+
+  /* The full "Потрібна допомога?" pill covers too much of a phone screen —
+     collapse it to a round icon button. Hosts that want their own entry
+     point can hide it entirely via window.ChatPTrans.hideLauncher(). */
+  .chat-bubble {
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    justify-content: center;
+    margin-left: auto;
+  }
+
+  .chat-widget-root--bottom-left .chat-bubble {
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  .chat-bubble__avatar,
+  .chat-bubble__text {
+    display: none;
+  }
+
+  .chat-bubble__icon {
+    color: white;
+  }
+
+  .chat-panel {
+    width: 100%;
+    max-height: min(80vh, 640px);
+  }
+
+  .chat-panel--thread {
+    height: min(80vh, 640px);
+  }
+
+  .chat-message {
+    max-width: 90%;
+  }
+
+  /* Keep inputs at >=16px so iOS Safari doesn't zoom the page on focus. */
+  .pre-chat__input,
+  .pre-chat__textarea,
+  .chat-panel__input {
+    font-size: 16px;
+  }
+}
+
+/* Very short viewports (landscape phones): give the thread more room by
+   trimming padding rather than letting it scroll off-screen. */
+@media (max-height: 520px) {
+  .chat-panel,
+  .chat-panel--thread {
+    max-height: 92vh;
+    height: auto;
+  }
+
+  .chat-panel__messages,
+  .pre-chat {
+    padding: 12px;
+  }
 }
