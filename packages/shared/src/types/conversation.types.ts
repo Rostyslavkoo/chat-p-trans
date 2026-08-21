@@ -1,10 +1,14 @@
-export type ConversationStatus = "open" | "pending" | "closed";
+export type ConversationStatus = "new" | "in_progress" | "waiting_client" | "closed";
 
 export interface Conversation {
   id: string;
   siteId: string;
   status: ConversationStatus;
-  managerId: string | null;
-  createdAt: string;
-  updatedAt: string;
+  clientName: string;
+  clientPhone: string;
+  assignedManagerId: string | null;
+  sourceUrl: string;
+  firstSeenAt: string;
+  lastMessageAt: string;
+  unreadCount: number;
 }

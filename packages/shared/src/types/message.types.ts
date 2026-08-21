@@ -6,4 +6,5 @@ export interface Message {
   sender: MessageSender;
   text: string;
   createdAt: string;
+  readAt: string | null;
 }

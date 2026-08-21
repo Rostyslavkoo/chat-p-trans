@@ -19,6 +19,8 @@ Read this section first in a new session — it's the fast path to "why does thi
 
 **Reference site**: `../P-Trans_FrontEnd` (sibling directory, separate git repo, Vue 2 + Vuetify + Vue CLI) is the first real tenant — a bus-ticket sales site. Its `public/index.html` originally had a real Binotel widget embed at the bottom of `<body>`; that's been replaced with our own `<script src="http://localhost:5173/widget.js" data-site-id="...">`. Use it as the live integration test for the widget — it's a completely separate framework/build (Vue 2, webpack, no shared tooling with this repo), which is exactly the environment the widget must survive.
 
+**Visual/UX spec**: `docs/images/` holds reference screenshots for both apps (Figma-style mockups, not live captures) — `Support panel*.png` for the admin inbox (chat list, thread view, transfer modal, ratings table, managers list) and `main page*.png` for the widget as embedded on the P-Trans site (pre-chat form with phone + message fields and validation, in-conversation view with read receipts and a typing indicator, post-chat 5-star rating form). `docs/implementation-plan.md` is the phased build plan derived from these screenshots — read it before starting UI work on either app; it also records what's deliberately out of scope (e.g. the "Швидкі відповіді"/"Створити бронювання"/"Внутрішня нотатка" buttons are visible in every screenshot but never shown in use, so their internal behavior isn't specified anywhere — don't invent a spec for them without asking).
+
 **Decisions made so far, and why:**
 
 1. **npm workspaces monorepo, not separate repos.** `apps/admin` + `apps/widget` + `packages/shared` in one repo so the two apps can share domain types (`packages/shared`) without publishing a package. Each app still has fully independent tooling (own `package.json`, `tsconfig.json`, `eslint.config.mjs`) — treat them as separate apps that happen to share a checkout, not one app split into folders.
@@ -29,14 +31,15 @@ Read this section first in a new session — it's the fast path to "why does thi
 6. **Realtime transport is explicitly undecided.** Don't assume WebSockets, SSE, polling, or a specific provider (Pusher/Ably/etc.) — this was deferred and hasn't been revisited. If a task needs live message delivery, surface that as an open question rather than picking a transport unilaterally.
 7. **The backend is a separate, not-yet-built repository.** Every "fetch"-shaped piece of code in this repo today (`~/lib/widget-config-api.ts` in the widget) is a deliberate mock, isolated to one file per concern, written to be swapped for a real call later without touching call sites. When adding a new feature that needs backend data, follow that same pattern — one isolated mock module — rather than scattering fetch/mock logic inline.
 
-**Current implementation status** (update this list as work lands, so it stays a snapshot of what's real vs. planned):
+**Current implementation status** (update this list as work lands, so it stays a snapshot of what's real vs. planned — cross-check against `docs/implementation-plan.md`'s phase checkboxes, which are the more granular source of truth):
 
-- ✅ `apps/admin` — bare Next.js scaffold only; no inbox UI, auth, or real pages yet.
-- ✅ `apps/widget` — working: Shadow DOM mount, chat bubble ↔ panel UI (static local echo, no real backend), per-tenant `WidgetConfig` (mocked) driving colors/copy/manager name, verified embedded live in `P-Trans_FrontEnd`.
+- ✅ `apps/admin` — bare Next.js scaffold only; no inbox UI, auth, or real pages yet. Full build-out is `docs/implementation-plan.md` Phases 0–4.
+- ✅ `apps/widget` — working: Shadow DOM mount, chat bubble ↔ panel UI (static local echo, no real backend), per-tenant `WidgetConfig` (mocked) driving colors/copy/manager name, verified embedded live in `P-Trans_FrontEnd`. Missing vs. the reference design: the pre-chat form (phone + message + validation), read receipts, typing indicator, and the post-chat rating form — all specced in `docs/implementation-plan.md` Phases 5–7.
 - ❌ Auth/login (admin) — not started.
 - ❌ Real conversation/message data — not started; `ChatPanel` currently just echoes what the visitor types, no manager-side round trip.
 - ❌ Realtime transport — not started, not chosen (see decision 6).
 - ❌ Backend integration — no real API exists yet; everything backend-shaped is mocked (see decision 7).
+- ❌ Admin↔widget mock data is deliberately NOT wired together (no shared local state, no `BroadcastChannel` hack) — each app is built and demoed against its own independent mock/fixture data until a real backend exists to actually connect them. Don't build cross-app plumbing to fake this.
 
 ## Repository Structure (npm workspaces monorepo)
 
