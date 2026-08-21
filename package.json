@@ -1,0 +1,17 @@
+{
+  "name": "chat-p-trans",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:admin": "npm run dev --workspace=admin",
+    "dev:widget": "npm run dev --workspace=widget",
+    "dev:widget:embed": "npm run dev:embed --workspace=widget",
+    "build:admin": "npm run build --workspace=admin",
+    "build:widget": "npm run build --workspace=widget",
+    "lint": "npm run lint --workspaces --if-present"
+  }
+}
