@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { Conversation } from "@chat-p-trans/shared";
 import { useConversationsStore } from "~/stores/conversations.store";
+import { useSessionStore } from "~/stores/session.store";
 import { Avatar } from "~/components/Avatar";
 import { StatusBadge } from "~/components/StatusBadge";
 import { formatRelativeTime } from "~/lib/format-relative-time";
@@ -29,14 +30,16 @@ function matchesTab(conversation: Conversation, tab: TabKey, currentManagerId: s
   }
 }
 
-export function ConversationList() {
-  const conversations = useConversationsStore((state) => state.conversations);
+interface ConversationListProps {
+  /** Already scoped to the signed-in manager's site by the page. */
+  conversations: Conversation[];
+}
+
+export function ConversationList({ conversations }: ConversationListProps) {
   const selectedConversationId = useConversationsStore((state) => state.selectedConversationId);
   const selectConversation = useConversationsStore((state) => state.selectConversation);
   const messagesByConversationId = useConversationsStore((state) => state.messagesByConversationId);
-  // TODO: there's no real manager id in the mock session yet — using the
-  // first mock manager as a stand-in so the "Мої" tab has something to show.
-  const currentManagerId = "manager-anna";
+  const currentManagerId = useSessionStore((state) => state.user?.id ?? null);
 
   const [activeTab, setActiveTab] = useState<TabKey>("active");
   const [search, setSearch] = useState("");

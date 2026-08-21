@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Conversation, Manager } from "@chat-p-trans/shared";
 import { useConversationsStore } from "~/stores/conversations.store";
+import { useSessionStore } from "~/stores/session.store";
 import { Avatar } from "~/components/Avatar";
 import { StatusDropdown } from "~/components/StatusDropdown";
 import { MessageBubble } from "~/components/MessageBubble";
@@ -21,6 +22,7 @@ export function ConversationThread({ conversation, managers }: ConversationThrea
   const setStatus = useConversationsStore((state) => state.setStatus);
   const assignManager = useConversationsStore((state) => state.assignManager);
   const sendMessage = useConversationsStore((state) => state.sendMessage);
+  const currentUserId = useSessionStore((state) => state.user?.id ?? null);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
 
   const isUnassigned = conversation.assignedManagerId === null;
@@ -38,10 +40,10 @@ export function ConversationThread({ conversation, managers }: ConversationThrea
         </div>
 
         <div className="flex items-center gap-2">
-          {isUnassigned && (
+          {isUnassigned && currentUserId && (
             <button
               type="button"
-              onClick={() => assignManager(conversation.id, "manager-anna")}
+              onClick={() => assignManager(conversation.id, currentUserId)}
               className="rounded-lg bg-brand-yellow px-4 py-2 text-sm font-semibold text-brand-navy transition hover:opacity-90"
             >
               Взяти в роботу
@@ -74,7 +76,7 @@ export function ConversationThread({ conversation, managers }: ConversationThrea
 
       {isTransferOpen && (
         <TransferManagerModal
-          managers={managers}
+          managers={managers.filter((manager) => manager.id !== currentUserId)}
           onClose={() => setIsTransferOpen(false)}
           onSelect={(managerId) => {
             assignManager(conversation.id, managerId);

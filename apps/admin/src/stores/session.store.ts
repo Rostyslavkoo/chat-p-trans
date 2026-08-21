@@ -1,24 +1,21 @@
 import { create } from "zustand";
-import type { ManagerPresence } from "@chat-p-trans/shared";
+import type { AuthenticatedUser, ManagerPresence } from "@chat-p-trans/shared";
 
-// TODO: replace with a real session once auth exists — `isAuthenticated`
-// is set directly by the mock login form for now (see /login page).
+// TODO: replace with a real session once auth exists — the user object is set
+// directly by the mock login form (see /login page), which matches an email
+// against MOCK_LOGIN_ACCOUNTS and ignores the password.
 interface SessionState {
-  isAuthenticated: boolean;
-  managerName: string;
-  managerAvatarUrl: string | null;
+  user: AuthenticatedUser | null;
   presence: ManagerPresence;
-  logIn: (managerName: string) => void;
+  logIn: (user: AuthenticatedUser) => void;
   logOut: () => void;
   setPresence: (presence: ManagerPresence) => void;
 }
 
 export const useSessionStore = create<SessionState>((set) => ({
-  isAuthenticated: false,
-  managerName: "",
-  managerAvatarUrl: null,
+  user: null,
   presence: "online",
-  logIn: (managerName) => set({ isAuthenticated: true, managerName }),
-  logOut: () => set({ isAuthenticated: false, managerName: "" }),
+  logIn: (user) => set({ user }),
+  logOut: () => set({ user: null }),
   setPresence: (presence) => set({ presence }),
 }));

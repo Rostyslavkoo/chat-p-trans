@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import { TopBar } from "~/components/TopBar";
 import { StarRating } from "~/components/StarRating";
-import { MOCK_MANAGERS, MOCK_RATINGS } from "~/lib/mock-data";
+import { MOCK_RATINGS } from "~/lib/mock-data";
+import { useManagersStore } from "~/stores/managers.store";
+import { useCurrentSiteId } from "~/hooks/useCurrentSiteId";
 import { formatDate } from "~/lib/format-relative-time";
 
 const TIME_RANGES = [
@@ -12,25 +14,34 @@ const TIME_RANGES = [
   { value: "90", label: "90 днів" },
 ];
 
-function findManagerName(managerId: string): string {
-  return MOCK_MANAGERS.find((manager) => manager.id === managerId)?.name ?? "—";
-}
-
 export default function RatingsPage() {
+  const siteId = useCurrentSiteId();
+  const allManagers = useManagersStore((state) => state.managers);
   const [rangeDays, setRangeDays] = useState("90");
   const [managerId, setManagerId] = useState<string>("all");
   // Anchored once per mount rather than read fresh in useMemo — Date.now()
   // is impure and React forbids calling it during render (react-hooks/purity).
   const [now] = useState(() => Date.now());
 
+  const siteManagers = useMemo(
+    () => allManagers.filter((manager) => manager.siteId === siteId),
+    [allManagers, siteId],
+  );
+
+  const findManagerName = (id: string) =>
+    siteManagers.find((manager) => manager.id === id)?.name ?? "—";
+
   const filteredRatings = useMemo(() => {
     const cutoff = now - Number(rangeDays) * 24 * 60 * 60 * 1000;
+    const siteManagerIds = new Set(siteManagers.map((manager) => manager.id));
+
     return MOCK_RATINGS.filter(
       (rating) =>
+        siteManagerIds.has(rating.managerId) &&
         new Date(rating.ratedAt).getTime() >= cutoff &&
         (managerId === "all" || rating.managerId === managerId),
     ).sort((a, b) => new Date(b.ratedAt).getTime() - new Date(a.ratedAt).getTime());
-  }, [rangeDays, managerId, now]);
+  }, [rangeDays, managerId, now, siteManagers]);
 
   const averageRating =
     filteredRatings.length > 0
@@ -80,7 +91,7 @@ export default function RatingsPage() {
             className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-700 outline-none"
           >
             <option value="all">Усі менеджери</option>
-            {MOCK_MANAGERS.map((manager) => (
+            {siteManagers.map((manager) => (
               <option key={manager.id} value={manager.id}>
                 {manager.name}
               </option>

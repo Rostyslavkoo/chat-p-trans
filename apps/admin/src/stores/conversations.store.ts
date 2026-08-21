@@ -18,9 +18,11 @@ interface ConversationsState {
 }
 
 export const useConversationsStore = create<ConversationsState>((set) => ({
+  // Holds every site's conversations, the way a backend would; callers filter
+  // by the signed-in manager's siteId (see useSiteConversations).
   conversations: MOCK_CONVERSATIONS,
   messagesByConversationId: MOCK_MESSAGES,
-  selectedConversationId: MOCK_CONVERSATIONS[0]?.id ?? null,
+  selectedConversationId: null,
 
   selectConversation: (conversationId) => set({ selectedConversationId: conversationId }),
 

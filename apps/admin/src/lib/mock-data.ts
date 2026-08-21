@@ -1,14 +1,38 @@
-import type { Conversation, ConversationRating, Manager, Message } from "@chat-p-trans/shared";
+import type {
+  AuthenticatedUser,
+  Conversation,
+  ConversationRating,
+  Manager,
+  Message,
+  Site,
+} from "@chat-p-trans/shared";
 
 // TODO: replace with real API calls once the backend exposes conversation/
-// manager/rating endpoints. Kept isolated here — swap this module's exports
-// for real fetches later without touching call sites (same pattern as
+// manager/rating/site endpoints. Kept isolated here — swap this module's
+// exports for real fetches later without touching call sites (same pattern as
 // apps/widget/src/lib/widget-config-api.ts).
+
+export const MOCK_SITES: Site[] = [
+  {
+    id: "p-trans-devs",
+    name: "P-Trans",
+    domain: "p-trans.com.ua",
+    createdAt: "2026-07-01T00:00:00.000Z",
+  },
+  {
+    id: "bus-lviv-a41x9k",
+    name: "Автобуси Львів",
+    domain: "bus-lviv.ua",
+    createdAt: "2026-08-05T00:00:00.000Z",
+  },
+];
 
 export const MOCK_MANAGERS: Manager[] = [
   {
     id: "manager-anna",
+    siteId: "p-trans-devs",
     name: "Анна Ковальчук",
+    email: "anna@p-trans.com.ua",
     avatarUrl: null,
     presence: "online",
     todayConversationCount: 12,
@@ -16,7 +40,9 @@ export const MOCK_MANAGERS: Manager[] = [
   },
   {
     id: "manager-maksym",
+    siteId: "p-trans-devs",
     name: "Максим Петренко",
+    email: "maksym@p-trans.com.ua",
     avatarUrl: null,
     presence: "online",
     todayConversationCount: 8,
@@ -24,7 +50,9 @@ export const MOCK_MANAGERS: Manager[] = [
   },
   {
     id: "manager-olha",
+    siteId: "p-trans-devs",
     name: "Ольга Шевчук",
+    email: "olha@p-trans.com.ua",
     avatarUrl: null,
     presence: "away",
     todayConversationCount: 5,
@@ -32,12 +60,35 @@ export const MOCK_MANAGERS: Manager[] = [
   },
   {
     id: "manager-dmytro",
+    siteId: "bus-lviv-a41x9k",
     name: "Дмитро Іваненко",
+    email: "dmytro@bus-lviv.ua",
     avatarUrl: null,
     presence: "offline",
     todayConversationCount: 0,
     averageRating: 4.4,
   },
+];
+
+/**
+ * Demo credentials for the mock login form. Password is ignored.
+ * TODO: delete once real auth exists.
+ */
+export const MOCK_LOGIN_ACCOUNTS: AuthenticatedUser[] = [
+  {
+    id: "user-admin",
+    role: "admin",
+    name: "Адміністратор",
+    email: "admin@chat-p-trans.com",
+    siteId: null,
+  },
+  ...MOCK_MANAGERS.map<AuthenticatedUser>((manager) => ({
+    id: manager.id,
+    role: "manager",
+    name: manager.name,
+    email: manager.email,
+    siteId: manager.siteId,
+  })),
 ];
 
 export const MOCK_CONVERSATIONS: Conversation[] = [
@@ -88,6 +139,18 @@ export const MOCK_CONVERSATIONS: Conversation[] = [
     firstSeenAt: "2026-06-01T00:00:00.000Z",
     lastMessageAt: "2026-08-21T10:34:00.000Z",
     unreadCount: 0,
+  },
+  {
+    id: "conv-oksana",
+    siteId: "bus-lviv-a41x9k",
+    status: "new",
+    clientName: "Оксана Р.",
+    clientPhone: "+380509876543",
+    assignedManagerId: null,
+    sourceUrl: "/rozklad/lviv-uzhhorod",
+    firstSeenAt: "2026-08-18T00:00:00.000Z",
+    lastMessageAt: "2026-08-21T09:15:00.000Z",
+    unreadCount: 2,
   },
 ];
 
@@ -154,6 +217,24 @@ export const MOCK_MESSAGES: Record<string, Message[]> = {
       text: "1 suitcase up to 20kg + hand luggage. Extra bags can be added at booking.",
       createdAt: "2026-08-21T10:34:00.000Z",
       readAt: "2026-08-21T10:35:00.000Z",
+    },
+  ],
+  "conv-oksana": [
+    {
+      id: "msg-oksana-1",
+      conversationId: "conv-oksana",
+      sender: "client",
+      text: "Доброго дня! О котрій відправлення на Ужгород?",
+      createdAt: "2026-08-21T09:12:00.000Z",
+      readAt: null,
+    },
+    {
+      id: "msg-oksana-2",
+      conversationId: "conv-oksana",
+      sender: "client",
+      text: "І чи є знижка для студентів?",
+      createdAt: "2026-08-21T09:15:00.000Z",
+      readAt: null,
     },
   ],
 };

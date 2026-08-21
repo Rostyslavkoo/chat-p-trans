@@ -3,3 +3,4 @@ export * from "./types/manager.types";
 export * from "./types/message.types";
 export * from "./types/rating.types";
 export * from "./types/site.types";
+export * from "./types/user.types";

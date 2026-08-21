@@ -1,6 +1,10 @@
+"use client";
+
 import { TopBar } from "~/components/TopBar";
 import { Avatar } from "~/components/Avatar";
-import { MOCK_MANAGERS } from "~/lib/mock-data";
+import { useManagersStore } from "~/stores/managers.store";
+import { useSitesStore } from "~/stores/sites.store";
+import { useCurrentSiteId } from "~/hooks/useCurrentSiteId";
 
 const PRESENCE_LABELS = {
   online: "Онлайн",
@@ -9,15 +13,22 @@ const PRESENCE_LABELS = {
 } as const;
 
 export default function ManagersPage() {
+  const siteId = useCurrentSiteId();
+  const allManagers = useManagersStore((state) => state.managers);
+  const sites = useSitesStore((state) => state.sites);
+
+  const managers = allManagers.filter((manager) => manager.siteId === siteId);
+  const siteName = sites.find((site) => site.id === siteId)?.name ?? "";
+
   return (
     <>
       <TopBar title="Панель підтримки" />
       <main className="flex-1 overflow-y-auto p-6">
         <h1 className="mb-1 text-xl font-bold text-slate-900">Менеджери</h1>
-        <p className="mb-6 text-sm text-slate-500">Команда підтримки P-Trans</p>
+        <p className="mb-6 text-sm text-slate-500">Команда підтримки {siteName}</p>
 
         <div className="flex flex-col gap-3">
-          {MOCK_MANAGERS.map((manager) => (
+          {managers.map((manager) => (
             <div
               key={manager.id}
               className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-5 py-4"
