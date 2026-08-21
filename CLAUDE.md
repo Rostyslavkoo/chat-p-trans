@@ -33,9 +33,9 @@ Read this section first in a new session — it's the fast path to "why does thi
 
 **Current implementation status** (update this list as work lands, so it stays a snapshot of what's real vs. planned — cross-check against `docs/implementation-plan.md`'s phase checkboxes, which are the more granular source of truth):
 
-- ✅ `apps/admin` — bare Next.js scaffold only; no inbox UI, auth, or real pages yet. Full build-out is `docs/implementation-plan.md` Phases 0–4.
+- ✅ `apps/admin` — Phases 0–3 of `docs/implementation-plan.md` are done: mock login + `AuthGuard`, app shell (`Sidebar`/`TopBar` with presence toggle), full chat inbox (list with tabs/search, thread with status dropdown + take/transfer/close actions, client detail panel, composer), ratings page, managers page. All interactive against Zustand-held mock data. Still pending: `/sites` embed-management screen (Phase 4).
 - ✅ `apps/widget` — working: Shadow DOM mount, chat bubble ↔ panel UI (static local echo, no real backend), per-tenant `WidgetConfig` (mocked) driving colors/copy/manager name, verified embedded live in `P-Trans_FrontEnd`. Missing vs. the reference design: the pre-chat form (phone + message + validation), read receipts, typing indicator, and the post-chat rating form — all specced in `docs/implementation-plan.md` Phases 5–7.
-- ❌ Auth/login (admin) — not started.
+- ⚠️ Auth/login (admin) — UI shell only. `/login` accepts any credentials and `AuthGuard` is a client-side redirect; there's no real authentication. Move the guard into Next.js middleware when a real auth backend exists.
 - ❌ Real conversation/message data — not started; `ChatPanel` currently just echoes what the visitor types, no manager-side round trip.
 - ❌ Realtime transport — not started, not chosen (see decision 6).
 - ❌ Backend integration — no real API exists yet; everything backend-shaped is mocked (see decision 7).
@@ -124,7 +124,7 @@ If provided markdown files as PRDs — read them as reference only. Do not modif
 
 ## Tech Stack
 
-- **Manager app (`apps/admin`)**: Next.js (App Router) with React, TypeScript
+- **Manager app (`apps/admin`)**: Next.js (App Router) with React, TypeScript, **Tailwind CSS v4** (custom theme tokens — `brand-navy`, `brand-yellow`, status/presence colors — declared via `@theme` in `src/app/globals.css`; use those tokens rather than raw hex values)
 - **Client widget (`apps/widget`)**: Vite in library mode, React, TypeScript — builds to one `widget.js` a host site loads via `<script>`
 - **State**: Zustand stores for app-wide state (per app — each has its own store tree, they don't share runtime state); prefer local `useState`/custom hooks for anything narrower
 - **Shared types**: `packages/shared` — conversation/message domain types used by both apps, kept in sync with the separate backend repo's API shapes by hand for now
@@ -427,6 +427,7 @@ function handleSubmit() { }              // Event handlers: handle* (in JSX: onC
 - ✅ Handle edge cases explicitly
 - ✅ Avoid code duplication — check for similar existing functionality first
 - ✅ List every value an effect/`useMemo`/`useCallback` reads in its dependency array — don't suppress the exhaustive-deps lint rule without a documented reason
+- ✅ Never call `Date.now()` / `new Date()` / `Math.random()` during render (including inside `useMemo` or a helper invoked from render) — the `react-hooks/purity` rule rejects it. Anchor the value once with `useState(() => Date.now())` and pass it down explicitly; `formatRelativeTime` in `apps/admin/src/lib/` takes `now` as a required argument for exactly this reason
 - ✅ In `apps/widget`, check the built bundle size after adding a dependency — it ships to every page that embeds it
 - ❌ Never store sensitive data in localStorage
 - ❌ Never trust client-side validation alone

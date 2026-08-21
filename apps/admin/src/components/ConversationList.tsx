@@ -40,6 +40,10 @@ export function ConversationList() {
 
   const [activeTab, setActiveTab] = useState<TabKey>("active");
   const [search, setSearch] = useState("");
+  // Anchored once per mount — Date.now() may not be called during render
+  // (react-hooks/purity). Good enough for a "4 хв"/"2 год" label; it won't
+  // auto-refresh without a re-render, which is acceptable for this UI.
+  const [now] = useState(() => Date.now());
 
   const tabCounts = useMemo(
     () =>
@@ -108,7 +112,7 @@ export function ConversationList() {
                     {conversation.clientName}
                   </span>
                   <span className="shrink-0 text-xs text-slate-400">
-                    {formatRelativeTime(conversation.lastMessageAt)}
+                    {formatRelativeTime(conversation.lastMessageAt, now)}
                   </span>
                 </div>
                 <p className="truncate text-sm text-slate-500">
