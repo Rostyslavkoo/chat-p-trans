@@ -258,6 +258,54 @@
   opacity: 0.6;
 }
 
+/* ------------------------------------------------------ typing indicator */
+
+.chat-message__bubble--typing {
+  padding: 12px 14px;
+}
+
+.chat-typing {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chat-typing__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-muted);
+  animation: chat-typing-bounce 1.2s infinite ease-in-out;
+}
+
+.chat-typing__dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.chat-typing__dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes chat-typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-typing__dot {
+    animation: none;
+    opacity: 0.6;
+  }
+}
+
 /* -------------------------------------------------------- pre-chat form */
 
 .pre-chat {
@@ -350,6 +398,105 @@
 
 .pre-chat__submit:hover {
   opacity: 0.9;
+}
+
+/* ------------------------------------------------------ close and rating */
+
+.chat-system-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--color-muted);
+  padding: 4px 0;
+}
+
+.rating {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rating__title {
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.rating__stars {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.rating__star {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: #d4d4d8;
+  display: flex;
+  transition: color 0.12s;
+}
+
+.rating__star-icon--filled {
+  color: var(--widget-color-accent);
+  fill: var(--widget-color-accent);
+}
+
+.rating__comment {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+}
+
+.rating__comment:focus {
+  border-color: var(--widget-color-primary);
+}
+
+.rating__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.rating__skip,
+.rating__submit {
+  flex: 1;
+  border-radius: 10px;
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.rating__skip {
+  border: 1px solid var(--color-border);
+  background: white;
+  color: var(--color-text);
+}
+
+.rating__submit {
+  border: none;
+  background: var(--widget-color-primary);
+  color: white;
+}
+
+.rating__submit:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 /* ---------------------------------------------------------------- footer */

@@ -1,5 +1,5 @@
 import type { WidgetConfig } from "@chat-p-trans/shared";
-import { Phone, X, UserRound } from "lucide-react";
+import { CircleCheckBig, Phone, X, UserRound } from "lucide-react";
 import { useWidgetUiStore } from "~/stores/widget-ui.store";
 import { useConversationStore } from "~/stores/conversation.store";
 import { PreChatForm } from "~/components/PreChatForm";
@@ -12,6 +12,8 @@ interface ChatPanelProps {
 export function ChatPanel({ config }: ChatPanelProps) {
   const close = useWidgetUiStore((state) => state.close);
   const hasStarted = useConversationStore((state) => state.hasStarted);
+  const isClosed = useConversationStore((state) => state.isClosed);
+  const closeConversation = useConversationStore((state) => state.closeConversation);
 
   return (
     <div className={`chat-panel ${hasStarted ? "chat-panel--thread" : ""}`}>
@@ -32,6 +34,17 @@ export function ChatPanel({ config }: ChatPanelProps) {
         </div>
 
         <div className="chat-panel__actions">
+          {hasStarted && !isClosed && (
+            <button
+              type="button"
+              className="chat-panel__icon-button"
+              onClick={closeConversation}
+              aria-label="Завершити розмову"
+              title="Завершити розмову"
+            >
+              <CircleCheckBig size={18} strokeWidth={2} />
+            </button>
+          )}
           <a href="tel:" className="chat-panel__icon-button" aria-label="Зателефонувати">
             <Phone size={18} strokeWidth={2} />
           </a>
@@ -39,7 +52,7 @@ export function ChatPanel({ config }: ChatPanelProps) {
             type="button"
             className="chat-panel__icon-button"
             onClick={close}
-            aria-label="Закрити чат"
+            aria-label="Згорнути чат"
           >
             <X size={20} strokeWidth={2} />
           </button>
